@@ -301,6 +301,7 @@ def normalize_max_features(value: Optional[str]) -> Optional[Union[int, str]]:
 
 def prepare_data(train_csv: str, test_csv: str, target: Optional[str], id_column: Optional[str]):
     import pandas as pd
+    from sklearn.preprocessing import StandardScaler
     train_df = pd.read_csv(train_csv)
     test_df = pd.read_csv(test_csv)
     target_name = target if target is not None else infer_target_column(list(train_df.columns))
@@ -324,6 +325,10 @@ def prepare_data(train_csv: str, test_csv: str, target: Optional[str], id_column
     X_all = combined.values.astype(float)
     X = X_all[: len(X_train_df)]
     X_test_final = X_all[len(X_train_df):]
+    
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X) # Escalonando o treino
+    X_test_final = scaler.transform(X_test_final) # Escalonando o teste
     return X, y, X_test_final, submission_ids, target_name
 
 
@@ -386,12 +391,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target", help="Nome da coluna alvo no treino")
     parser.add_argument("--id_column", help="Nome da coluna de identificador")
     parser.add_argument("--output_csv", "--submission", dest="output_csv", default="submission.csv", help="Arquivo CSV de saida")
-    parser.add_argument("--n_estimators", type=int, default=30)
-    parser.add_argument("--max_depth", type=int, default=8)
+    parser.add_argument("--n_estimators", type=int, default=200)
+    parser.add_argument("--max_depth", type=int, default=15)
     parser.add_argument("--min_samples_split", type=int, default=8)
     parser.add_argument("--min_samples_leaf", type=int, default=4)
     parser.add_argument("--n_directions", type=int, default=25)
-    parser.add_argument("--max_features", default="sqrt")
+    parser.add_argument("--max_features", default="22")
     parser.add_argument("--max_thresholds", type=int, default=80)
     parser.add_argument("--validation_size", type=float, default=0.2)
     parser.add_argument("--random_state", type=int, default=7)
